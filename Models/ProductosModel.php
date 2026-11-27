@@ -31,8 +31,8 @@ class ProductosModel extends Query{
         $this->id_medida = $id_medida;
         $this->id_categoria = $id_categoria;
         $this->img = $img;
-        $verificar = "SELECT * FROM productos WHERE codigo = '$this->codigo'";
-        $existe = $this->select($verificar);
+        $verificar = "SELECT * FROM productos WHERE codigo = ?";
+        $existe = $this->select($verificar, [$this->codigo]);
         if (empty($existe)) {
             $sql = "INSERT INTO productos(codigo, descripcion, precio_compra, precio_venta, id_medida, id_categoria, foto) VALUES (?,?,?,?,?,?,?)";
             $datos = array($this->codigo, $this->nombre, $this->precio_compra, $this->precio_venta, $this->id_medida, $this->id_categoria, $this->img);

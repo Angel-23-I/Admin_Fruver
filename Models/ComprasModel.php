@@ -8,8 +8,8 @@ class ComprasModel extends Query{
 
     public function getProCod(string $cod)
     {
-        $sql = "SELECT * FROM productos WHERE codigo = '$cod'";
-        $data = $this->select($sql);
+        $sql = "SELECT * FROM productos WHERE codigo = ?";
+        $data = $this->select($sql, [$cod]);
         return $data;
     }
 

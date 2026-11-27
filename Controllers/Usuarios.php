@@ -38,9 +38,9 @@ class Usuarios extends Controller{
         }else{
             $usuario = $_POST['usuario'];
             $clave = $_POST['clave'];
-            $hash = hash("SHA256",$clave);
-            $data = $this->model->getUsuario($usuario, $hash);
-            if($data) {
+            $data = $this->model->getUsuario($usuario);
+            if ($data && $this->verificarClave($clave, $data['clave'], (int) $data['id'])) {
+                session_regenerate_id(true);
                 $_SESSION['id_usuario'] = $data['id'];
                 $_SESSION['usuario'] = $data['usuario'];
                 $_SESSION['nombre'] = $data['nombre'];
@@ -61,7 +61,7 @@ class Usuarios extends Controller{
         $confirmar = $_POST['confirmar'];
         $caja = $_POST['caja'];
         $id = $_POST['id'];
-        $hash = hash("SHA256", $clave);
+        $hash = password_hash($clave, PASSWORD_DEFAULT);
         if (empty($usuario) || empty($nombre) || empty($caja)) {
             $msg = "Todos los campos son obligatorios";
         }else{
@@ -130,10 +130,9 @@ class Usuarios extends Controller{
                 $msg = "Las contraseñas no coinciden";
             } else {
                 $id = $_SESSION['id_usuario'];
-                $hash = hash("SHA256", $actual);
-                $data = $this->model->getPass($hash, $id);
-                if (!empty($data)) {
-                    $verificar = $this->model->modificarPass(hash("SHA256", $nueva), $id);
+                $data = $this->model->getPass($id);
+                if (!empty($data) && $this->verificarClave($actual, $data['clave'], $id)) {
+                    $verificar = $this->model->modificarPass(password_hash($nueva, PASSWORD_DEFAULT), $id);
                     if ($verificar == 1) {
                         $msg = 'ok';
                     } else {
@@ -146,6 +145,26 @@ class Usuarios extends Controller{
         }
         echo json_encode($msg, JSON_UNESCAPED_UNICODE);
         die();
+    }
+
+    /**
+     * Verifica la contraseña contra el hash guardado.
+     * Acepta los hashes SHA-256 antiguos y, si coinciden, los reemplaza por uno
+     * de password_hash() para que cada cuenta migre en su siguiente inicio de sesión.
+     */
+    private function verificarClave(string $clave, string $guardado, int $id): bool
+    {
+        if (password_verify($clave, $guardado)) {
+            if (password_needs_rehash($guardado, PASSWORD_DEFAULT)) {
+                $this->model->modificarPass(password_hash($clave, PASSWORD_DEFAULT), $id);
+            }
+            return true;
+        }
+        if (strlen($guardado) === 64 && hash_equals($guardado, hash("SHA256", $clave))) {
+            $this->model->modificarPass(password_hash($clave, PASSWORD_DEFAULT), $id);
+            return true;
+        }
+        return false;
     }
 
     public function salir(){

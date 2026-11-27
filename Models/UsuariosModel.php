@@ -5,10 +5,9 @@ class UsuariosModel extends Query{
     public function __construct(){
        parent::__construct();
     }
-    public function getUsuario(string $usuario, string $clave){
-        $sql = "SELECT * FROM usuarios WHERE usuario = '$usuario' AND clave = '$clave'";
-        $data = $this->select($sql);
-        return $data;
+    public function getUsuario(string $usuario){
+        $sql = "SELECT * FROM usuarios WHERE usuario = ?";
+        return $this->select($sql, [$usuario]);
     }
 
     public function getCajas(){
@@ -26,8 +25,8 @@ class UsuariosModel extends Query{
         $this->nombre = $nombre;
         $this->clave = $clave;
         $this->id_caja = $id_caja;
-        $verificar = "SELECT * FROM usuarios WHERE usuario = '$this->usuario'";
-        $existe = $this->select($verificar);
+        $verificar = "SELECT * FROM usuarios WHERE usuario = ?";
+        $existe = $this->select($verificar, [$this->usuario]);
         if (empty($existe)) {
             $sql = "INSERT INTO usuarios(usuario, nombre, clave, id_caja) VALUES (?,?,?,?)";
             $datos = array($this->usuario, $this->nombre, $this->clave, $this->id_caja);
@@ -86,10 +85,9 @@ class UsuariosModel extends Query{
         return $data;
     }
 
-    public function getPass(string $clave, int $id){
-        $sql = "SELECT * FROM usuarios WHERE clave = '$clave' AND id = $id";
-        $data = $this->select($sql);
-        return $data;
+    public function getPass(int $id){
+        $sql = "SELECT clave FROM usuarios WHERE id = ?";
+        return $this->select($sql, [$id]);
     }
     
 }
