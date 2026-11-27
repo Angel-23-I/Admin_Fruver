@@ -17,8 +17,8 @@ class ClientesModel extends Query{
         $this->nombre = $nombre;
         $this->celular = $celular;
         $this->direccion = $direccion;
-        $verificar = "SELECT * FROM clientes WHERE documento = '$this->documento'";
-        $existe = $this->select($verificar);
+        $verificar = "SELECT * FROM clientes WHERE documento = ?";
+        $existe = $this->select($verificar, [$this->documento]);
         if (empty($existe)) {
             $sql = "INSERT INTO clientes(documento, nombre, celular, direccion) VALUES (?,?,?,?)";
             $datos = array($this->documento, $this->nombre, $this->celular, $this->direccion);
